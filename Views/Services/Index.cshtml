@@ -1,0 +1,67 @@
+@model IEnumerable<OrgMgmt.Models.Service>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</p>
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Type)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Rate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Employee)
+        </th>
+        <th>
+            Assigned Clients
+        </th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Type)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rate)
+            </td>
+            <td>
+                @* Shows the name of the assigned employee *@
+                @Html.DisplayFor(modelItem => item.Employee.Name)
+            </td>
+            <td>
+                @* Loops through the list of Clients for this Service *@
+                @if (item.Clients != null && item.Clients.Any())
+                {
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var client in item.Clients)
+                        {
+                            <li><span >@client.Name</span></li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="text-muted">No clients assigned</span>
+                }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
