@@ -46,7 +46,7 @@ A web application built with ASP.NET Core MVC for managing employees, shifts, an
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/SarthakAgrawal442/OrgMgmt.git
+   git clone https://github.com/GauravOnline/OrgMgmt
    cd OrgMgmt
    ```
 
