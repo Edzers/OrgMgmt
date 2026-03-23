@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt.Models;
 
 namespace OrgMgmt.Controllers
 {
+    [Authorize]
     public class ShiftController : Controller
     {
         private readonly OrgDbContext _context;
@@ -28,7 +30,7 @@ namespace OrgMgmt.Controllers
         // POST: Shift/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,StartTime,EndTime,Frequency,DaysOfWeek")] Shift shift)
+        public async Task<IActionResult> Create([Bind("Id,Name,Location,StartTime,EndTime,Frequency,Interval,DaysOfWeek")] Shift shift)
         {
             if (ModelState.IsValid)
             {
@@ -54,7 +56,7 @@ namespace OrgMgmt.Controllers
 
         // POST: Shift/Assign
         [HttpPost]
-        public async Task<IActionResult> Assign(Dictionary<Guid, List<int>> EmployeeShifts)
+        public async Task<IActionResult> Assign(Dictionary<Guid, List<Guid>> EmployeeShifts)
         {
             // EmployeeShifts: Key = EmployeeId, Value = List of ShiftIds
             

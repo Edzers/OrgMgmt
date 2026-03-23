@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using OrgMgmt.Models;
 
 namespace OrgMgmt
 {
-    public class OrgDbContext : DbContext
+    public class OrgDbContext : IdentityDbContext<ApplicationUser>
     {
         public OrgDbContext(DbContextOptions<OrgDbContext> options) : base(options) { }
         public OrgDbContext() { }
@@ -13,6 +14,8 @@ namespace OrgMgmt
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Shift> Shifts { get; set; }
+        public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+        public DbSet<AuditLogEntry> AuditLogEntries { get; set; }
         
         // protected override void OnModelCreating(ModelBuilder modelBuilder)
         // {
@@ -21,6 +24,8 @@ namespace OrgMgmt
         // }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+
             // Many-to-Many Relationship configuration
             modelBuilder.Entity<Client>()
                 .HasMany(c => c.Services)
@@ -32,10 +37,43 @@ namespace OrgMgmt
                 .WithOne(s => s.Employee)
                 .HasForeignKey(s => s.EmployeeId);
 
-            // Shift-Employee Many-to-Many
+            // Shift-Employee Many-to-Many with unique constraint
             modelBuilder.Entity<Shift>()
                 .HasMany(s => s.Employees)
-                .WithMany(e => e.Shifts);
+                .WithMany(e => e.Shifts)
+                .UsingEntity(j => j.HasIndex("EmployeesID", "ShiftsId").IsUnique());
+
+            // Employee → AttendanceRecord (one-to-many)
+            modelBuilder.Entity<AttendanceRecord>()
+                .HasOne(a => a.Employee)
+                .WithMany()
+                .HasForeignKey(a => a.EmployeeId);
+
+            // Shift → AttendanceRecord (one-to-many, required)
+            modelBuilder.Entity<AttendanceRecord>()
+                .HasOne(a => a.Shift)
+                .WithMany()
+                .HasForeignKey(a => a.ShiftId)
+                .IsRequired();
+
+            // AuditLogEntry → AttendanceRecord (many-to-one)
+            modelBuilder.Entity<AuditLogEntry>()
+                .HasOne(a => a.AttendanceRecord)
+                .WithMany()
+                .HasForeignKey(a => a.AttendanceRecordId);
+
+            // Financial precision
+            modelBuilder.Entity<AttendanceRecord>()
+                .Property(a => a.HoursToPay)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<AuditLogEntry>()
+                .Property(a => a.PreviousHoursToPay)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<AuditLogEntry>()
+                .Property(a => a.NewHoursToPay)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }
